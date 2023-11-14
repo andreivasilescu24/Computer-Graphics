@@ -222,7 +222,7 @@ void Tema1::detectCollisionStarEnemy(ShootingStar shooting_star, int index)
     {
         if(shooting_star.color == enemies[i].color && shooting_star.matrixSquareI == enemies[i].lineIndex)
         {
-            if(glm::distance(glm::vec2(shooting_star.X, shooting_star.Y), glm::vec2(enemies[i].X, enemies[i].Y)) < hexagonRadix + starRadix)
+            if(glm::distance(glm::vec2(shooting_star.X, shooting_star.Y), glm::vec2(enemies[i].X, enemies[i].Y)) < hexagonRadix + starRadix && enemies[i].hits < 3)
             {
                 enemies[i].hits++;
                 shootingStars.erase(shootingStars.begin() + index);
@@ -325,10 +325,6 @@ void Tema1::Update(float deltaTimeSeconds)
         {
             if(enemies[i].X < -100) {
                 enemies.erase(enemies.begin() + i);
-            } else if( enemies[i].scaleX <= 0)
-            {
-                disableGunsByColor(enemies[i].color, enemies[i].lineIndex);
-                enemies.erase(enemies.begin() + i);
             }
             else
             {
@@ -337,9 +333,15 @@ void Tema1::Update(float deltaTimeSeconds)
                 {
                     enemies[i].scaleX -= deltaTimeSeconds * 3;
                     enemies[i].scaleY -= deltaTimeSeconds * 3;
+                    
+                    if( enemies[i].scaleX <= 0)
+                    {
+                        disableGunsByColor(enemies[i].color, enemies[i].lineIndex);
+                        enemies.erase(enemies.begin() + i);
+                    }
                 } else
                 {
-                    enemies[i].X -= deltaTimeSeconds * 70;
+                    enemies[i].X -= deltaTimeSeconds * 60;
                 }
                 modelMatrix *= transform2D::Translate(enemies[i].X, enemies[i].Y);
                 modelMatrix *= transform2D::Scale(enemies[i].scaleX, enemies[i].scaleY);
@@ -414,7 +416,7 @@ void Tema1::Update(float deltaTimeSeconds)
             RenderMesh2D(meshes[gunsPlaced[i].name], shaders["VertexColor"], modelMatrix);
             
             // ADD SHOOTING STAR
-            if(gunsPlaced[i].shoot && (gunsPlaced[i].timeBetweenStars >= 2.5f || gunsPlaced[i].timeBetweenStars == 0))
+            if(gunsPlaced[i].shoot && (gunsPlaced[i].timeBetweenStars >= 3.5f || gunsPlaced[i].timeBetweenStars == 0))
             {
                 shootingStars.push_back(ShootingStar(gunsPlaced[i].X + gunWidth / 3, 720 - gunsPlaced[i].Y, 0,
                     gunsPlaced[i].color, gunsPlaced[i].matrixSquareI, gunsPlaced[i].matrixSquareJ));
@@ -474,7 +476,7 @@ void Tema1::Update(float deltaTimeSeconds)
         for(int i = 0; i < shootingStars.size(); i++)
         {
             modelMatrix = glm::mat3(1);
-            shootingStars[i].X += deltaTimeSeconds * 200;
+            shootingStars[i].X += deltaTimeSeconds * 250;
             shootingStars[i].angularStep += deltaTimeSeconds * 3.5f;
             modelMatrix *= transform2D::Translate(shootingStars[i].X, shootingStars[i].Y);
             modelMatrix *= transform2D::Rotate(-shootingStars[i].angularStep);
