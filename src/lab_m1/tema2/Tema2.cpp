@@ -51,7 +51,7 @@ void Tema2::Init()
 
     {
         Mesh* mesh = new Mesh("corp");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "corp.obj");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "corp_tanc.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
@@ -64,6 +64,12 @@ void Tema2::Init()
     {
         Mesh* mesh = new Mesh("senila");
         mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "senila.obj");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
+
+    {
+        Mesh* mesh = new Mesh("turela2");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2_models"), "turela.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
@@ -122,21 +128,55 @@ void Tema2::Update(float deltaTimeSeconds)
     //     RenderMesh(meshes["sphere"], shaders["VertexNormal"], modelMatrix);
     // }
 
-    {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(10, 0, 0));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 0, 1));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
-        RenderMesh(meshes["turela"], shaders["VertexNormal"], modelMatrix);
-    }
-
     // {
     //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 40, 0));
-    //     // modelMatrix = glm::rotate(modelMatrix, RADIANS(90), glm::vec3(0, 1, 0));
+    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(9, 0.1f, 1.125f));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 0, 1));
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.06f));
+    //     RenderMesh(meshes["turela"], shaders["VertexNormal"], modelMatrix);
+    // }
+    //
+    // {
+    //     glm::mat4 modelMatrix = glm::mat4(1);
+    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(10, 0, 5));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 1, 0));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 0, 1));
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.07f));
+    //     RenderMesh(meshes["corp"], shaders["VertexNormal"], modelMatrix);
+    // }
+    //
+    // {
+    //     glm::mat4 modelMatrix = glm::mat4(1);
+    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(9.0f, 3.90f, 1.55f));
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
+    //     RenderMesh(meshes["tun"], shaders["VertexNormal"], modelMatrix);
+    // }
+    //
+    // {
+    //     glm::mat4 modelMatrix = glm::mat4(1);
+    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(6.1f, 0, 0.7f));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.069f));
     //     RenderMesh(meshes["senila"], shaders["VertexNormal"], modelMatrix);
     // }
+    //
+    // {
+    //     glm::mat4 modelMatrix = glm::mat4(1);
+    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(6.1f, 0, -0.5f));
+    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.069f));
+    //     RenderMesh(meshes["senila"], shaders["VertexNormal"], modelMatrix);
+    // }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        // modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 1, 0));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
+        RenderMesh(meshes["turela2"], shaders["VertexNormal"], modelMatrix);
+    }
 
     // TODO(student): Draw more objects with different model matrices.
     // Attention! The `RenderMesh()` function overrides the usual
@@ -246,6 +286,12 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
         }
 
         if(window->KeyHold(GLFW_KEY_K))
+        {
+            
+        }
+    } else
+    {
+        if(window->KeyHold(GLFW_KEY_W))
         {
             
         }

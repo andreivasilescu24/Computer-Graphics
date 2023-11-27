@@ -37,5 +37,6 @@ namespace m1
 
         // TODO(student): If you need any other class variables, define them here.
         float fov = RADIANS(60);
+
     };
 }   // namespace m1
