@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include "components/transform.h"
+
 using namespace std;
 using namespace m1;
 
@@ -31,17 +33,17 @@ void Tema2::Init()
     camera = new implemented::Camera_t2();
     camera->Set(glm::vec3(0, 2, 3.5f), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
 
-    {
-        Mesh* mesh = new Mesh("box");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
-    {
-        Mesh* mesh = new Mesh("sphere");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
+    // {
+    //     Mesh* mesh = new Mesh("box");
+    //     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
+    //     meshes[mesh->GetMeshID()] = mesh;
+    // }
+    //
+    // {
+    //     Mesh* mesh = new Mesh("sphere");
+    //     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
+    //     meshes[mesh->GetMeshID()] = mesh;
+    // }
 
     {
         Mesh* mesh = new Mesh("turela");
@@ -51,7 +53,7 @@ void Tema2::Init()
 
     {
         Mesh* mesh = new Mesh("corp");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "corp_tanc.obj");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "corp.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
@@ -62,19 +64,23 @@ void Tema2::Init()
     }
 
     {
-        Mesh* mesh = new Mesh("senila");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "senila.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
-    {
-        Mesh* mesh = new Mesh("turela2");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2_models"), "turela.obj");
+        Mesh* mesh = new Mesh("senile");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "senile.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
     // TODO(student): After you implement the changing of the projection
     // parameters, remove hardcodings of these parameters
+
+    {
+        Shader *shader = new Shader("MyShader");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
+
+    
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
 
 }
@@ -128,54 +134,28 @@ void Tema2::Update(float deltaTimeSeconds)
     //     RenderMesh(meshes["sphere"], shaders["VertexNormal"], modelMatrix);
     // }
 
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(9, 0.1f, 1.125f));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 0, 1));
-    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.06f));
-    //     RenderMesh(meshes["turela"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(10, 0, 5));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 1, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 0, 1));
-    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.07f));
-    //     RenderMesh(meshes["corp"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(9.0f, 3.90f, 1.55f));
-    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
-    //     RenderMesh(meshes["tun"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(6.1f, 0, 0.7f));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
-    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.069f));
-    //     RenderMesh(meshes["senila"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(6.1f, 0, -0.5f));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(1, 0, 0));
-    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.069f));
-    //     RenderMesh(meshes["senila"], shaders["VertexNormal"], modelMatrix);
-    // }
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.96f, 0.96f, 0.96f));
+    }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
-        // modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(-90.0f), glm::vec3(0, 1, 0));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
-        RenderMesh(meshes["turela2"], shaders["VertexNormal"], modelMatrix);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.18f, 0.54f, 0.34f));
+    }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.19f, 0.8f, 0.19f));
+    }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.96f, 0.96f, 0.96f));
     }
 
     // TODO(student): Draw more objects with different model matrices.
@@ -186,13 +166,13 @@ void Tema2::Update(float deltaTimeSeconds)
 
     // Render the camera target. This is useful for understanding where
     // the rotation point is, when moving in third-person camera mode.
-    if (renderCameraTarget)
-    {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, camera->GetTargetPosition());
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
-        RenderMesh(meshes["sphere"], shaders["VertexColor"], modelMatrix);
-    }
+    // if (renderCameraTarget)
+    // {
+    //     glm::mat4 modelMatrix = glm::mat4(1);
+    //     modelMatrix = glm::translate(modelMatrix, camera->GetTargetPosition());
+    //     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
+    //     RenderMesh(meshes["sphere"], shaders["VertexColor"], modelMatrix);
+    // }
 }
 
 
@@ -202,18 +182,55 @@ void Tema2::FrameEnd()
 }
 
 
-void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix)
+void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color)
 {
-    if (!mesh || !shader || !shader->program)
+     if (!mesh || !shader || !shader->GetProgramID())
         return;
 
     // Render an object using the specified shader and the specified position
-    shader->Use();
-    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUseProgram(shader->program);
 
-    mesh->Render();
+    // Set shader uniforms for light & material properties
+    // TODO(student): Set light position uniform
+    GLint location_light_position = glGetUniformLocation(shader->program, "light_position");
+    glUniform3fv(location_light_position, 1, glm::value_ptr(lightPosition));
+
+    // glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
+    glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
+    // TODO(student): Set eye position (camera position) uniform
+    GLint location_eye_position = glGetUniformLocation(shader->program, "eye_position");
+    glUniform3fv(location_eye_position, 1, glm::value_ptr(eyePosition));
+
+    // TODO(student): Set material property uniforms (shininess, kd, ks, object color)
+    GLint location_material_shineness = glGetUniformLocation(shader->program, "material_shineness");
+    glUniform1i(location_material_shineness, materialShininess);
+
+    location_material_shineness = glGetUniformLocation(shader->program, "material_kd");
+    glUniform1f(location_material_shineness, materialKd);
+
+    location_material_shineness = glGetUniformLocation(shader->program, "material_ks");
+    glUniform1f(location_material_shineness, materialKs);
+
+    location_material_shineness = glGetUniformLocation(shader->program, "object_color");
+    glUniform3fv(location_material_shineness, 1, glm::value_ptr(color));
+
+    // Bind model matrix
+    GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
+    glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    // Bind view matrix
+    glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    int loc_view_matrix = glGetUniformLocation(shader->program, "View");
+    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+    // Bind projection matrix
+    glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+    int loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
+    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+    // Draw the object
+    glBindVertexArray(mesh->GetBuffers()->m_VAO);
+    glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
 }
 
 

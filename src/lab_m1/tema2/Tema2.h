@@ -19,7 +19,7 @@ namespace m1
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
 
-        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix) override;
+        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, glm::vec3 color);
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -37,6 +37,10 @@ namespace m1
 
         // TODO(student): If you need any other class variables, define them here.
         float fov = RADIANS(60);
+        glm::vec3 lightPosition;
+        unsigned int materialShininess;
+        float materialKd;
+        float materialKs;
 
     };
 }   // namespace m1

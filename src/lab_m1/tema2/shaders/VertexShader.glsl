@@ -56,7 +56,7 @@ void main()
     float light = ambient_light + fac_atenuare * (diffuse_light + specular_light);
 
     // TODO(student): Send color light output to fragment shader
-    color = object_color;
+    color = object_color * light;
 
     gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 }
