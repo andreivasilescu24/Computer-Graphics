@@ -16,7 +16,7 @@ using namespace m1;
  */
 
 
-Tema2::Tema2()
+Tema2::Tema2() : playerTank(0, 0, 0, 0, 0, false)
 {
 }
 
@@ -31,19 +31,13 @@ void Tema2::Init()
     renderCameraTarget = false;
 
     camera = new implemented::Camera_t2();
-    camera->Set(glm::vec3(0, 2, 3.5f), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+    camera->Set(glm::vec3(playerTank.x, playerTank.y + 3, playerTank.z + 5), glm::vec3(playerTank.x, playerTank.y, playerTank.z), glm::vec3(0, 1, 0));
 
-    // {
-    //     Mesh* mesh = new Mesh("box");
-    //     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
-    //     meshes[mesh->GetMeshID()] = mesh;
-    // }
-    //
-    // {
-    //     Mesh* mesh = new Mesh("sphere");
-    //     mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
-    //     meshes[mesh->GetMeshID()] = mesh;
-    // }
+    {
+        Mesh* mesh = new Mesh("ground");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
 
     {
         Mesh* mesh = new Mesh("turela");
@@ -79,17 +73,15 @@ void Tema2::Init()
         shader->CreateAndLink();
         shaders[shader->GetName()] = shader;
     }
-
     
     projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
-
 }
 
 
 void Tema2::FrameStart()
 {
     // Clears the color buffer (using the previously set color) and depth buffer
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.52f, 0.87f, 0.98f, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::ivec2 resolution = window->GetResolution();
@@ -100,62 +92,45 @@ void Tema2::FrameStart()
 
 void Tema2::Update(float deltaTimeSeconds)
 {
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(45.0f), glm::vec3(0, 1, 0));
-    //
-    //     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
-    //     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, 0.5f, 0));
-    //     RenderMesh(meshes["box"], shaders["Simple"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(3, 2, 0));
-    //     modelMatrix = glm::rotate(modelMatrix, RADIANS(45.0f), glm::vec3(0, 0, 1));
-    //     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
-    // }
-    //
-    // {
-    //     glm::mat4 modelMatrix = glm::mat4(1);
-    //     modelMatrix = glm::translate(modelMatrix, glm::vec3(-3, 2, 0));
-    //     RenderMesh(meshes["sphere"], shaders["VertexNormal"], modelMatrix);
-    // }
-
     {
         glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(100, 0, 100));
+        RenderMesh(meshes["ground"], shaders["MyShader"], modelMatrix, glm::vec3(0.19f, 0.8f, 0.19f));
+    }
+    
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(playerTank.x, playerTank.y, playerTank.z));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.96f, 0.96f, 0.96f));
+        RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(playerTank.x, playerTank.y, playerTank.z));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.18f, 0.54f, 0.34f));
+        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0.39f, 0));
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(playerTank.x, playerTank.y, playerTank.z));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.19f, 0.8f, 0.19f));
+        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.13f, 0.54f, 0.13f));
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(playerTank.x, playerTank.y, playerTank.z));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.96f, 0.96f, 0.96f));
+        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
     }
 
     // TODO(student): Draw more objects with different model matrices.
@@ -184,50 +159,29 @@ void Tema2::FrameEnd()
 
 void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color)
 {
-     if (!mesh || !shader || !shader->GetProgramID())
+    if (!mesh || !shader || !shader->GetProgramID())
         return;
 
     // Render an object using the specified shader and the specified position
     glUseProgram(shader->program);
-
-    // Set shader uniforms for light & material properties
-    // TODO(student): Set light position uniform
-    GLint location_light_position = glGetUniformLocation(shader->program, "light_position");
-    glUniform3fv(location_light_position, 1, glm::value_ptr(lightPosition));
-
-    // glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
-    glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
-    // TODO(student): Set eye position (camera position) uniform
-    GLint location_eye_position = glGetUniformLocation(shader->program, "eye_position");
-    glUniform3fv(location_eye_position, 1, glm::value_ptr(eyePosition));
-
-    // TODO(student): Set material property uniforms (shininess, kd, ks, object color)
-    GLint location_material_shineness = glGetUniformLocation(shader->program, "material_shineness");
-    glUniform1i(location_material_shineness, materialShininess);
-
-    location_material_shineness = glGetUniformLocation(shader->program, "material_kd");
-    glUniform1f(location_material_shineness, materialKd);
-
-    location_material_shineness = glGetUniformLocation(shader->program, "material_ks");
-    glUniform1f(location_material_shineness, materialKs);
-
-    location_material_shineness = glGetUniformLocation(shader->program, "object_color");
-    glUniform3fv(location_material_shineness, 1, glm::value_ptr(color));
-
-    // Bind model matrix
-    GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
-    glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-    // Bind view matrix
+    
+    int location_model = glGetUniformLocation(shader->program, "Model");
+    
+    glUniformMatrix4fv(location_model, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    
+    int location_view = glGetUniformLocation(shader->program, "View");
+    
     glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
-    int loc_view_matrix = glGetUniformLocation(shader->program, "View");
-    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-
-    // Bind projection matrix
+    glUniformMatrix4fv(location_view, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+    
+    int location_projection = glGetUniformLocation(shader->program, "Projection");
+    
     glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
-    int loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
-    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(location_projection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
+    int location = glGetUniformLocation(shader->program, "Color");
+    glUniform3fv(location, 1, glm::value_ptr(color));
+    
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
@@ -238,7 +192,6 @@ void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatr
  *  These are callback functions. To find more about callbacks and
  *  how they behave, see `input_controller.h`.
  */
-
 
 void Tema2::OnInputUpdate(float deltaTime, int mods)
 {
@@ -310,7 +263,29 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
     {
         if(window->KeyHold(GLFW_KEY_W))
         {
-            
+            playerTank.x -= deltaTime * 2 * sin(RADIANS(playerTank.angle));
+            playerTank.z -= deltaTime * 2 * cos(RADIANS(playerTank.angle));
+            camera->MoveForward(deltaTime * 2);
+        }
+        if(window->KeyHold(GLFW_KEY_S))
+        {
+            playerTank.x += deltaTime * 2 * sin(RADIANS(playerTank.angle));
+            playerTank.z += deltaTime * 2 * cos(RADIANS(playerTank.angle));
+            camera->MoveForward(-deltaTime * 2);
+        }
+        if(window->KeyHold(GLFW_KEY_A))
+        {
+            playerTank.angle += deltaTime * 100;
+            // camera->TranslateForward(-5);
+            camera->RotateThirdPerson_OY(RADIANS(deltaTime * 100));
+            // camera->TranslateForward(5);
+        }
+        if(window->KeyHold(GLFW_KEY_D))
+        {
+            playerTank.angle -= deltaTime * 100;
+            // camera->TranslateForward(-5);
+            camera->RotateThirdPerson_OY(RADIANS(-deltaTime * 100));
+            // camera->TranslateForward(5);
         }
     }
 
@@ -344,7 +319,7 @@ void Tema2::OnKeyRelease(int key, int mods)
 void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
     // Add mouse move event
-
+    std::cout << mouseX << " " << mouseY << " " << deltaX << " " << deltaY << "\n";
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
         float sensivityOX = 0.001f;
@@ -366,6 +341,15 @@ void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
             // variables for setting up the rotation speed.
             camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
             camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
+        }
+    } else
+    {
+        if(deltaX > 0)
+        {
+            playerTank.turretAngle -= 2 * 0.8f;
+        } else
+        {
+            playerTank.turretAngle += 2 * 0.8f;
         }
     }
 }

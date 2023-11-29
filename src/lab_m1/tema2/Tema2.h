@@ -2,6 +2,7 @@
 
 #include "components/simple_scene.h"
 #include "lab_m1/Tema2/lab_camera.h"
+#include "Tank.h"
 
 
 namespace m1
@@ -37,10 +38,6 @@ namespace m1
 
         // TODO(student): If you need any other class variables, define them here.
         float fov = RADIANS(60);
-        glm::vec3 lightPosition;
-        unsigned int materialShininess;
-        float materialKd;
-        float materialKs;
-
+        Tank playerTank;
     };
 }   // namespace m1
