@@ -16,7 +16,7 @@ using namespace m1;
  */
 
 
-Tema2::Tema2() : playerTank(0, 0, 0, 0, 0, false)
+Tema2::Tema2() : playerTank(0, 0, 0, 0, 0, false, 0, 0, 0, 0)
 {
 }
 
@@ -98,6 +98,9 @@ void Tema2::FrameStart()
 
 void Tema2::Update(float deltaTimeSeconds)
 {
+
+    playerTank.currPosition = glm::vec3(playerTank.x, playerTank.y, playerTank.z);
+    
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
@@ -137,6 +140,15 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
         RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
+    }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(playerTank.projectileX * deltaTimeSeconds, playerTank.projectileY * deltaTimeSeconds, playerTank.projectileZ * deltaTimeSeconds));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["proiectil"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0, 0));
     }
 
     // TODO(student): Draw more objects with different model matrices.
@@ -282,16 +294,16 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
         if(window->KeyHold(GLFW_KEY_A))
         {
             playerTank.angle += deltaTime * 100;
-            camera->TranslateForward(8.f);
+            // camera->TranslateForward(8.f);
             camera->RotateThirdPerson_OY(RADIANS(deltaTime * 100));
-            camera->TranslateForward(-8.f);
+            // camera->TranslateForward(-8.f);
         }
         if(window->KeyHold(GLFW_KEY_D))
         {
             playerTank.angle -= deltaTime * 100;
-            camera->TranslateForward(8.f);
+            // camera->TranslateForward(8.f);
             camera->RotateThirdPerson_OY(RADIANS(-deltaTime * 100));
-            camera->TranslateForward(-8.f);
+            // camera->TranslateForward(-8.f);
         }
     }
 
@@ -325,7 +337,6 @@ void Tema2::OnKeyRelease(int key, int mods)
 void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
     // Add mouse move event
-    std::cout << mouseX << " " << mouseY << " " << deltaX << " " << deltaY << "\n";
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
         float sensivityOX = 0.001f;
@@ -364,6 +375,19 @@ void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 void Tema2::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
     // Add mouse button press event
+    std::cout << button << std::endl;
+    if(button == 1)
+    {
+        playerTank.projectileX += 2 * sin(RADIANS(playerTank.turretAngle));
+        playerTank.projectileZ += 2 * cos(RADIANS(playerTank.turretAngle));
+        // float x = playerTank.x + 2 * sin(RADIANS(playerTank.angle));
+        // float z = playerTank.z + 2 * cos(RADIANS(playerTank.angle));
+        // float y = playerTank.y + 1.5f;
+        // float angle = playerTank.angle;
+        // float turretAngle = playerTank.turretAngle;
+        // bool forward = playerTank.forward;
+        // playerTank = Tank(x, y, z, angle, turretAngle, forward);
+    }
 }
 
 

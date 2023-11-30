@@ -215,9 +215,6 @@ void Lab6::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     // TODO(student): Set shader uniform "Projection" to projectionMatrix
     glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
     glUniformMatrix4fv(location_projection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-    int location_clock = glGetUniformLocation(shader->program, "Clock");
-    glUniform1f(location_clock, abs(sinf(clock)) + abs(sinf(clock)));
     
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
