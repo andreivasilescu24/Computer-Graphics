@@ -31,7 +31,7 @@ void Tema2::Init()
     renderCameraTarget = false;
 
     camera = new implemented::Camera_t2();
-    camera->Set(glm::vec3(playerTank.x, playerTank.y + 3, playerTank.z + 5), glm::vec3(playerTank.x, playerTank.y, playerTank.z), glm::vec3(0, 1, 0));
+    camera->Set(glm::vec3(playerTank.x, playerTank.y + 4.f, playerTank.z + 8.f), glm::vec3(playerTank.x, playerTank.y, playerTank.z), glm::vec3(0, 1, 0));
 
     {
         Mesh* mesh = new Mesh("ground");
@@ -60,6 +60,12 @@ void Tema2::Init()
     {
         Mesh* mesh = new Mesh("senile");
         mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "senile.obj");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
+
+    {
+        Mesh* mesh = new Mesh("proiectil");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "tema2"), "proiectil.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
@@ -96,7 +102,7 @@ void Tema2::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(100, 0, 100));
-        RenderMesh(meshes["ground"], shaders["MyShader"], modelMatrix, glm::vec3(0.19f, 0.8f, 0.19f));
+        RenderMesh(meshes["ground"], shaders["MyShader"], modelMatrix, glm::vec3(0.29f, 0, 0.5f));
     }
     
     {
@@ -276,16 +282,16 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
         if(window->KeyHold(GLFW_KEY_A))
         {
             playerTank.angle += deltaTime * 100;
-            // camera->TranslateForward(-5);
+            camera->TranslateForward(8.f);
             camera->RotateThirdPerson_OY(RADIANS(deltaTime * 100));
-            // camera->TranslateForward(5);
+            camera->TranslateForward(-8.f);
         }
         if(window->KeyHold(GLFW_KEY_D))
         {
             playerTank.angle -= deltaTime * 100;
-            // camera->TranslateForward(-5);
+            camera->TranslateForward(8.f);
             camera->RotateThirdPerson_OY(RADIANS(-deltaTime * 100));
-            // camera->TranslateForward(5);
+            camera->TranslateForward(-8.f);
         }
     }
 
@@ -346,10 +352,10 @@ void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
     {
         if(deltaX > 0)
         {
-            playerTank.turretAngle -= 2 * 0.8f;
+            playerTank.turretAngle -= 2 * 0.6f;
         } else
         {
-            playerTank.turretAngle += 2 * 0.8f;
+            playerTank.turretAngle += 2 * 0.6f;
         }
     }
 }
