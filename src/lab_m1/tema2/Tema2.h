@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Building.h"
+#include "EnemyTank.h"
+#include "Projectile.h"
 #include "components/simple_scene.h"
 #include "lab_m1/Tema2/lab_camera.h"
 #include "Tank.h"
-
 
 namespace m1
 {
@@ -30,6 +32,11 @@ namespace m1
         void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
+        float getRandFloatNum(float min, float max);
+        void generateBuildings();
+        void generateEnemyTank();
+        void RenderEnemies(float deltaTimeSeconds);
+        float getRandIntNum(int min, int max);
 
      protected:
         implemented::Camera_t2 *camera;
@@ -39,5 +46,12 @@ namespace m1
         // TODO(student): If you need any other class variables, define them here.
         float fov = RADIANS(60);
         Tank playerTank;
+        std::vector<Projectile> playerProjectiles;
+        std::vector<Building> buildings;
+        std:: vector<EnemyTank> enemyTanks;
+        int numBuildings = 20;
+        int numEnemyTanks = 20;
+        float timer = 0;
+        
     };
 }   // namespace m1

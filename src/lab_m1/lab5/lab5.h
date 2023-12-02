@@ -2,6 +2,7 @@
 
 #include "components/simple_scene.h"
 #include "lab_m1/lab5/lab_camera.h"
+#include "lab_m1/tema2/lab_camera.h"
 
 
 namespace m1
@@ -31,7 +32,7 @@ namespace m1
         void OnWindowResize(int width, int height) override;
 
      protected:
-        implemented::Camera *camera;
+        implemented::Camera_t2 *camera;
         glm::mat4 projectionMatrix;
         bool renderCameraTarget;
 
