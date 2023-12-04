@@ -26,7 +26,7 @@ Tema2::~Tema2()
 {
 }
 
-std::string decodeMovementIndex(int index)
+std::string Tema2::decodeMovementIndex(int index)
 {
     switch (index)
     {
@@ -38,6 +38,19 @@ std::string decodeMovementIndex(int index)
         return "LEFT";
     case 3:
         return "RIGHT";
+    }
+}
+
+std::string Tema2::decodeTurretMoveIndex(int index)
+{
+    switch (index)
+    {
+    case 0:
+        return "ROTATE_LEFT";
+    case 1:
+        return "ROTATE_RIGHT";
+    case 2:
+        return "STAY";
     }
 }
 
@@ -84,13 +97,15 @@ void Tema2::generateEnemyTank()
     float x = getRandFloatNum(-70, 70);
     float z = getRandFloatNum(-70, 70);
     float y = 0;
-    float tankAngle = getRandFloatNum(-360, 360);
-    float turretAngle = getRandFloatNum(-360, 360);
+    float tankAngle = 180.f;
+    float turretAngle = 0.f;
     std::string movementState = decodeMovementIndex(getRandIntNum(0, 3));
+    std::string turretState = decodeTurretMoveIndex(getRandIntNum(0, 2));
     float targetSeconds = getRandFloatNum(1, 5);
+    float targetSecondsTurret = getRandFloatNum(1, 4);
     
     enemyTanks.push_back(EnemyTank(tankAngle, 100, turretAngle, 0, glm::vec3(x, y, z),
-        glm::vec3(0, 0, -1), glm::vec3(0, 0, -1), movementState, targetSeconds));
+        glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), movementState, turretState, targetSeconds, targetSecondsTurret));
 }
 
 void Tema2::Init()
@@ -175,10 +190,37 @@ void Tema2::FrameStart()
     glViewport(0, 0, resolution.x, resolution.y);
 }
 
+bool Tema2::checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_tank)
+{
+    glm::vec3 distanceProjectileTank = projectile.position - enemy_tank.position;
+    int distance = sqrt(distanceProjectileTank.x * distanceProjectileTank.x + distanceProjectileTank.y * distanceProjectileTank.y + distanceProjectileTank.z * distanceProjectileTank.z);
+
+    if(distance < projectileRadius + tankRadius)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool Tema2::checkCollisionPlayerEnemy(EnemyTank enemy_tank)
+{
+    glm::vec3 distanceTankTank = playerTank.position - enemy_tank.position;
+    int distance = sqrt(distanceTankTank.x * distanceTankTank.x + distanceTankTank.y * distanceTankTank.y + distanceTankTank.z * distanceTankTank.z);
+
+    if(distance < tankRadius + tankRadius)
+    {
+        std::cout << "COLLISION TANK TANK" << std::endl;
+        return true;
+    }
+    return false;
+}
+
 void Tema2::RenderEnemies(float deltaTimeSeconds)
 {
     for(int i = 0; i < numEnemyTanks; i++)
     {
+        enemyTanks[i].updateTankPosition(deltaTimeSeconds);
+        enemyTanks[i].updateTurretPosition();
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix, enemyTanks[i].position);
@@ -214,14 +256,74 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
         }
 
         enemyTanks[i].updateTimerMove(deltaTimeSeconds);
-        if(enemyTanks[i].timerMove > enemyTanks[i].targetSeconds)
+        if(enemyTanks[i].timerMove > enemyTanks[i].targetSecondsTank)
         {
-            enemyTanks[i].updateMovementState(getRandIntNum(0, 1));
-            enemyTanks[i].timerMove = 0;
-            enemyTanks[i].targetSeconds = getRandFloatNum(1, 5);
+            std::string new_state = decodeMovementIndex(getRandIntNum(0, 3));
+            float new_target_seconds;
+            if(new_state == "FORWARD" || new_state == "BACKWARD")
+            {
+                new_target_seconds = getRandFloatNum(4.f, 6.f);
+            } else
+            {
+                new_target_seconds = getRandFloatNum(0.f, 1.f);
+            }
+            enemyTanks[i].updateMovementState(new_state, new_target_seconds);
+        }
+
+        enemyTanks[i].updateTimerTurretMove(deltaTimeSeconds);
+        if(enemyTanks[i].timerTurretMove > enemyTanks[i].targetSecondsTurret)
+        {
+            enemyTanks[i].turretState = decodeTurretMoveIndex(getRandIntNum(0, 2));
+            if(enemyTanks[i].turretState == "ROTATE_LEFT" || enemyTanks[i].turretState == "ROTATE_RIGHT")
+            {
+                enemyTanks[i].targetSecondsTurret = getRandFloatNum(0.5f, 2.f);
+            } else
+            {
+                enemyTanks[i].targetSecondsTurret = getRandFloatNum(2.f, 4.f);
+            }
+            enemyTanks[i].timerTurretMove = 0;
         }
     }
 }
+
+void Tema2::RenderProjectiles(float deltaTimeSeconds)
+{
+    for(int i = 0; i < playerProjectiles.size(); i++)
+    {
+        if(playerProjectiles[i].time >= 5.f || playerProjectiles[i].hit == true)
+        {
+            playerProjectiles.erase(playerProjectiles.begin() + i);
+        }
+        
+        else if(playerProjectiles[i].hit == false)
+        {
+            glm::vec3 direction = glm::normalize(glm::vec3(playerProjectiles[i].forward.x, 0, playerProjectiles[i].forward.z));
+            playerProjectiles[i].position += deltaTimeSeconds * 10 * direction;
+            playerProjectiles[i].time += deltaTimeSeconds;
+            glm::mat4 modelMatrix = glm::mat4(1);
+            modelMatrix = glm::translate(modelMatrix, playerProjectiles[i].position);
+            modelMatrix = glm::rotate(modelMatrix, RADIANS(playerProjectiles[i].angle), glm::vec3(0, 1, 0));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+            RenderMesh(meshes["proiectil"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0, 0));
+            
+            for(int j = 0; j < numEnemyTanks; j++)
+            {
+                if(checkCollisionProjectileTank(playerProjectiles[i], enemyTanks[j]))
+                {
+                    enemyTanks[j].hp -= damagePerHit;
+                    playerProjectiles[i].hit = true;
+                    // if(enemyTanks[j].hp == 0)
+                    // {
+                    //     enemyTanks.erase(enemyTanks.begin() + j);
+                    //     numEnemyTanks--;
+                    // }
+                    break;
+                }
+            }
+        }
+    }
+}
+
 
 
 
@@ -274,6 +376,8 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
         RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
     }
+
+    
     
     for(int i = 0; i < numBuildings; i++)
     {
@@ -283,29 +387,22 @@ void Tema2::Update(float deltaTimeSeconds)
         RenderMesh(meshes["cladire"], shaders["MyShader"], modelMatrix, glm::vec3(0.09f, 0.09f, 0.49f));
     }
     
-    for(int i = 0; i < playerProjectiles.size(); i++)
+    RenderProjectiles(deltaTimeSeconds);
+    RenderEnemies(deltaTimeSeconds);
+
+    for(int i = 0; i < enemyTanks.size(); i++)
     {
-        if(playerProjectiles[i].time >= 5.f)
+        if(checkCollisionPlayerEnemy(enemyTanks[i]))
         {
-            playerProjectiles.erase(playerProjectiles.begin() + i);
-        }
-        
-        else if(playerProjectiles[i].hit == false)
-        {
-            glm::vec3 direction = glm::normalize(glm::vec3(playerProjectiles[i].forward.x, 0, playerProjectiles[i].forward.z));
-            playerProjectiles[i].position += deltaTimeSeconds * 10 * direction;
-            playerProjectiles[i].time += deltaTimeSeconds;
-            glm::mat4 modelMatrix = glm::mat4(1);
-            modelMatrix = glm::translate(modelMatrix, playerProjectiles[i].position);
-            modelMatrix = glm::rotate(modelMatrix, RADIANS(playerProjectiles[i].angle), glm::vec3(0, 1, 0));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["proiectil"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0, 0));
+            glm::vec3 distancePlayerTank = playerTank.position - enemyTanks[i].position;
+            float P_modul = (2 * tankRadius) - sqrt(distancePlayerTank.x * distancePlayerTank.x + distancePlayerTank.y * distancePlayerTank.y + distancePlayerTank.z * distancePlayerTank.z);
+            glm::vec3 P = P_modul * glm::normalize(distancePlayerTank);
+            playerTank.position -= P * 2.f;
+            enemyTanks[i].position += P * 2.f;
+            camera->Set(glm::vec3(playerTank.position.x, playerTank.position.y + 4.f, playerTank.position.z + 8.f), glm::vec3(0, 3, 0), glm::vec3(0, 1, 0));
+
         }
     }
-
-    
-    RenderEnemies(deltaTimeSeconds);
-    
 }
 
 
@@ -421,15 +518,11 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
     {
         if(window->KeyHold(GLFW_KEY_W))
         {
-            // playerTank.x -= deltaTime * 2 * sin(RADIANS(playerTank.angle));
-            // playerTank.z -= deltaTime * 2 * cos(RADIANS(playerTank.angle));
             playerTank.position += 2 * deltaTime * playerTank.forwardTank;
             camera->MoveForward(deltaTime * 2);
         }
         if(window->KeyHold(GLFW_KEY_S))
         {
-            // playerTank.x += deltaTime * 2 * sin(RADIANS(playerTank.angle));
-            // playerTank.z += deltaTime * 2 * cos(RADIANS(playerTank.angle));
             playerTank.position -= 2 * deltaTime * playerTank.forwardTank;
             camera->MoveForward(-deltaTime * 2);
         }

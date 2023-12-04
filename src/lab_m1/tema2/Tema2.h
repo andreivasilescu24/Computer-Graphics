@@ -36,8 +36,14 @@ namespace m1
         void generateBuildings();
         void generateEnemyTank();
         void RenderEnemies(float deltaTimeSeconds);
+        void RenderProjectiles(float deltaTimeSeconds);
         float getRandIntNum(int min, int max);
-
+        std::string decodeMovementIndex(int index);
+        std::string decodeTurretMoveIndex(int index);
+        bool checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_tank);
+        bool checkCollisionPlayerEnemy(EnemyTank enemy_tank);
+        bool checkCollisionEnemyEnemy(EnemyTank enemy_tank);
+            
      protected:
         implemented::Camera_t2 *camera;
         glm::mat4 projectionMatrix;
@@ -52,6 +58,12 @@ namespace m1
         int numBuildings = 20;
         int numEnemyTanks = 20;
         float timer = 0;
+
+        int damagePerHit = 20;
+        int hitCounter = 0;
+
+        float projectileRadius = 0.03f;
+        float tankRadius = 1.f;
         
     };
 }   // namespace m1

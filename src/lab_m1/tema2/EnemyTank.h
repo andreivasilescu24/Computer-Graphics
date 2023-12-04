@@ -11,7 +11,6 @@ public:
     int hp;
 
     float turretAngle;
-    
     float cooldown;
 
     glm::vec3 position;
@@ -22,11 +21,15 @@ public:
     bool shoot;
 
     std::string movementState;
+    std::string turretState;
     float timerMove;
-    float targetSeconds;
+    float timerTurretMove;
+    float targetSecondsTank;
+    float targetSecondsTurret;
     
     EnemyTank(float angle, int hp, float turret_angle, float cooldown, const glm::vec3& position, const glm::vec3& forward_tank,
-        const glm::vec3& forward_turret, std::string _movementState, float _targetSeconds, bool _shoot = false, float _timerMove = 0)
+        const glm::vec3& forward_turret, std::string _movementState, std::string _turretState, float _targetSecondsTank, float _targetSecondsTurret,
+        bool _shoot = false, float _timerMove = 0, float _timerTurretMove = 0)
         : angle(angle),
           hp(hp),
           turretAngle(turret_angle),
@@ -36,11 +39,17 @@ public:
           forwardTurret(forward_turret),
           shoot(_shoot),
             movementState(_movementState),
-            targetSeconds(_targetSeconds),
-            timerMove(_timerMove)
+            turretState(_turretState),
+            targetSecondsTank(_targetSecondsTank),
+            targetSecondsTurret(_targetSecondsTurret),
+            timerMove(_timerMove),
+            timerTurretMove(_timerTurretMove)
     {
     }
 
     void updateTimerMove(float deltaTime);
-    void updateMovementState(int index);
+    void updateMovementState(std::string new_state, float new_target_seconds);
+    void updateTimerTurretMove(float deltaTime);
+    void updateTankPosition(float deltaTime);
+    void updateTurretPosition();
 };
