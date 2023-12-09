@@ -12,6 +12,7 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 uniform vec3 Color;
+uniform float hp;
 
 // Output
 // TODO(student): Output values to fragment shader
@@ -19,6 +20,7 @@ out vec2 frag_coord;
 out vec3 frag_normal;
 out vec3 frag_color;
 out vec3 frag_position;
+flat out float frag_hp;
 
 void main()
 {
@@ -27,9 +29,14 @@ void main()
 	frag_color = Color;
 	frag_normal = v_normal;
 	frag_coord = v_coord;
+	frag_hp = hp;
 	
     // TODO(student): Compute gl_Position
     
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    if(frag_hp == 3.f) {
+        gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    } else {
+        gl_Position = Projection * View * Model * vec4(v_position * sin(frag_hp), 1.0);
+    }
 
 }

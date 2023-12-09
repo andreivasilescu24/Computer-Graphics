@@ -92,7 +92,7 @@ void Lab8::Update(float deltaTimeSeconds)
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
         // TODO(student): Add or change the object colors
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, glm::vec3(1,0, 0));
 
     }
 
@@ -120,6 +120,13 @@ void Lab8::Update(float deltaTimeSeconds)
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
         RenderMesh(meshes["sphere"], shaders["Simple"], modelMatrix);
     }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, lightPosition2);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
+        RenderMesh(meshes["sphere"], shaders["Simple"], modelMatrix);
+    }
 }
 
 
@@ -144,6 +151,12 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     int light_direction = glGetUniformLocation(shader->program, "light_direction");
     glUniform3f(light_direction, lightDirection.x, lightDirection.y, lightDirection.z);
 
+    // int light_position2 = glGetUniformLocation(shader->program, "light_position2");
+    // glUniform3f(light_position2, lightPosition2.x, lightPosition2.y, lightPosition2.z);
+    //
+    // int light_direction2 = glGetUniformLocation(shader->program, "light_direction2);
+    // glUniform3f(light_direction2, lightDirection2.x, lightDirection2.y, lightDirection2.z);
+
     // Set eye position (camera position) uniform
     glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
     int eye_position = glGetUniformLocation(shader->program, "eye_position");
@@ -163,7 +176,9 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUniform3f(object_color, color.r, color.g, color.b);
 
     // TODO(student): Set any other shader uniforms that you need
-
+    GLint spotLocation = glGetUniformLocation(shader->program, "spot");
+    glUniform1i(spotLocation, spot);
+    
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
     glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -220,7 +235,10 @@ void Lab8::OnKeyPress(int key, int mods)
     // Add key press event
 
     // TODO(student): Set keys that you might need
-
+    if(window->KeyHold(GLFW_KEY_F))
+    {
+        spot = (spot + 1) % 2;
+    }
 }
 
 

@@ -5,7 +5,7 @@ class Tank
 {
 public:
     float angle;
-    int hp;
+    float hp;
 
     float turretAngle;
 
@@ -17,7 +17,7 @@ public:
     glm::vec3 forwardTank;
     glm::vec3 forwardTurret;
     
-    Tank(glm::vec3 _position, float angle, float turret_angle, float projectile_x, float projectile_y, float projectile_z, float projectile_angle, int _hp, float _cooldown,
+    Tank(glm::vec3 _position, float angle, float turret_angle, float projectile_x, float projectile_y, float projectile_z, float projectile_angle, float _hp, float _cooldown,
         const glm::vec3& _forwardTank, const glm::vec3& _forwardTurret)
         : position(_position),
           angle(angle),

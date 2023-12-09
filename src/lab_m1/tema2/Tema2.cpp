@@ -17,7 +17,7 @@ using namespace m1;
  */
 
 
-Tema2::Tema2() : playerTank(glm::vec3(0, 0, 0), 0, 0, 0, 0, 0, 0, 100, 0, glm::vec3(0, 0, -1), glm::vec3(0, 0, -1))
+Tema2::Tema2() : playerTank(glm::vec3(0, 0, 0), 0, 0, 0, 0, 0, 0, 3.f, 0, glm::vec3(0, 0, -1), glm::vec3(0, 0, -1))
 {
 }
 
@@ -104,7 +104,7 @@ void Tema2::generateEnemyTank()
     float targetSeconds = getRandFloatNum(1, 5);
     float targetSecondsTurret = getRandFloatNum(1, 4);
     
-    enemyTanks.push_back(EnemyTank(tankAngle, 100, turretAngle, 0, glm::vec3(x, y, z),
+    enemyTanks.push_back(EnemyTank(tankAngle, 3.f, turretAngle, 0, glm::vec3(x, y, z),
         glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), movementState, turretState, targetSeconds, targetSecondsTurret));
 }
 
@@ -113,7 +113,7 @@ void Tema2::Init()
     renderCameraTarget = false;
 
     camera = new implemented::Camera_t2();
-    camera->Set(glm::vec3(playerTank.position.x, playerTank.position.y + 4.f, playerTank.position.z + 8.f), glm::vec3(0, 3, 0), glm::vec3(0, 1, 0));
+    camera->Set(playerTank.position + glm::vec3(0.f, 4.f, 8.f), glm::vec3(0, 3, 0), glm::vec3(0, 1, 0));
 
     {
         Mesh* mesh = new Mesh("ground");
@@ -192,8 +192,7 @@ void Tema2::FrameStart()
 
 bool Tema2::checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_tank)
 {
-    glm::vec3 distanceProjectileTank = projectile.position - enemy_tank.position;
-    int distance = sqrt(distanceProjectileTank.x * distanceProjectileTank.x + distanceProjectileTank.y * distanceProjectileTank.y + distanceProjectileTank.z * distanceProjectileTank.z);
+    float distance = glm::distance(projectile.position, enemy_tank.position);
 
     if(distance < projectileRadius + tankRadius)
     {
@@ -204,9 +203,7 @@ bool Tema2::checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_
 
 bool Tema2::checkCollisionPlayerEnemy(EnemyTank enemy_tank)
 {
-    glm::vec3 distanceTankTank = playerTank.position - enemy_tank.position;
-    int distance = sqrt(distanceTankTank.x * distanceTankTank.x + distanceTankTank.y * distanceTankTank.y + distanceTankTank.z * distanceTankTank.z);
-
+    float distance = glm::distance(playerTank.position, enemy_tank.position);
     if(distance < tankRadius + tankRadius)
     {
         std::cout << "COLLISION TANK TANK" << std::endl;
@@ -226,7 +223,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::translate(modelMatrix, enemyTanks[i].position);
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
+            RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp);
         }
 
         {
@@ -234,7 +231,20 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.54f, 0, 0));
+            RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.54f, 0, 0), enemyTanks[i].hp);
+        }
+
+        if(enemyTanks[i].checkTankNearby(playerTank, tankRadius))
+        {
+            std::cout << "TANK NEARBY" << std::endl;
+        }
+        {
+            glm::mat4 modelMatrix = glm::mat4(1);
+            modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
+            modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
+            modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+            RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f), enemyTanks[i].hp);
         }
 
         {
@@ -243,16 +253,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f));
-        }
-
-        {
-            glm::mat4 modelMatrix = glm::mat4(1);
-            modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
-            modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
-            modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
+            RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp);
         }
 
         enemyTanks[i].updateTimerMove(deltaTimeSeconds);
@@ -298,7 +299,7 @@ void Tema2::RenderProjectiles(float deltaTimeSeconds)
         else if(playerProjectiles[i].hit == false)
         {
             glm::vec3 direction = glm::normalize(glm::vec3(playerProjectiles[i].forward.x, 0, playerProjectiles[i].forward.z));
-            playerProjectiles[i].position += deltaTimeSeconds * 10 * direction;
+            playerProjectiles[i].position += deltaTimeSeconds * 15 * direction;
             playerProjectiles[i].time += deltaTimeSeconds;
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix, playerProjectiles[i].position);
@@ -348,7 +349,7 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, playerTank.position);
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
+        RenderMesh(meshes["senile"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), playerTank.hp);
     }
 
     {
@@ -356,16 +357,7 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, playerTank.position);
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0.39f, 0));
-    }
-
-    {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, playerTank.position);
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.13f, 0.54f, 0.13f));
+        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0.39f, 0), playerTank.hp);
     }
 
     {
@@ -374,7 +366,16 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f));
+        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.13f, 0.54f, 0.13f), playerTank.hp);
+    }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, playerTank.position);
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), playerTank.hp);
     }
 
     
@@ -394,13 +395,11 @@ void Tema2::Update(float deltaTimeSeconds)
     {
         if(checkCollisionPlayerEnemy(enemyTanks[i]))
         {
-            glm::vec3 distancePlayerTank = playerTank.position - enemyTanks[i].position;
-            float P_modul = (2 * tankRadius) - sqrt(distancePlayerTank.x * distancePlayerTank.x + distancePlayerTank.y * distancePlayerTank.y + distancePlayerTank.z * distancePlayerTank.z);
-            glm::vec3 P = P_modul * glm::normalize(distancePlayerTank);
-            playerTank.position -= P * 2.f;
-            enemyTanks[i].position += P * 2.f;
-            camera->Set(glm::vec3(playerTank.position.x, playerTank.position.y + 4.f, playerTank.position.z + 8.f), glm::vec3(0, 3, 0), glm::vec3(0, 1, 0));
-
+            float P = (2 * tankRadius) - glm::distance(playerTank.position, enemyTanks[i].position);
+            glm::vec3 direction = glm::normalize(playerTank.position - enemyTanks[i].position);
+            playerTank.position += direction * P * 0.5f;
+            enemyTanks[i].position -= direction * P * 0.5f;
+            camera->position += direction * P * 0.5f;
         }
     }
 }
@@ -412,7 +411,7 @@ void Tema2::FrameEnd()
 }
 
 
-void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color)
+void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color, int hp)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -436,6 +435,9 @@ void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatr
 
     int location = glGetUniformLocation(shader->program, "Color");
     glUniform3fv(location, 1, glm::value_ptr(color));
+
+    int hp_location = glGetUniformLocation(shader->program, "hp");
+    glUniform1f(hp_location, hp);
     
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
@@ -518,13 +520,13 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
     {
         if(window->KeyHold(GLFW_KEY_W))
         {
-            playerTank.position += 2 * deltaTime * playerTank.forwardTank;
-            camera->MoveForward(deltaTime * 2);
+            playerTank.position += 4 * deltaTime * playerTank.forwardTank;
+            camera->MoveForward(deltaTime * 4);
         }
         if(window->KeyHold(GLFW_KEY_S))
         {
-            playerTank.position -= 2 * deltaTime * playerTank.forwardTank;
-            camera->MoveForward(-deltaTime * 2);
+            playerTank.position -= 4 * deltaTime * playerTank.forwardTank;
+            camera->MoveForward(-deltaTime * 4);
         }
         if(window->KeyHold(GLFW_KEY_A))
         {

@@ -22,7 +22,7 @@ namespace m1
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
 
-        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, glm::vec3 color);
+        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, glm::vec3 color, int hp = 3.f);
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -59,11 +59,11 @@ namespace m1
         int numEnemyTanks = 20;
         float timer = 0;
 
-        int damagePerHit = 20;
+        float damagePerHit = 1.f;
         int hitCounter = 0;
 
         float projectileRadius = 0.03f;
-        float tankRadius = 1.f;
+        float tankRadius = 1.5f;
         
     };
 }   // namespace m1

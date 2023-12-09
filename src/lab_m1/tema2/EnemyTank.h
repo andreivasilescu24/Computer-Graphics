@@ -3,12 +3,13 @@
 
 #include "Projectile.h"
 #include "utils/glm_utils.h"
+#include "Tank.h"
 
 class EnemyTank
 {
 public:
     float angle;
-    int hp;
+    float hp;
 
     float turretAngle;
     float cooldown;
@@ -27,11 +28,11 @@ public:
     float targetSecondsTank;
     float targetSecondsTurret;
     
-    EnemyTank(float angle, int hp, float turret_angle, float cooldown, const glm::vec3& position, const glm::vec3& forward_tank,
+    EnemyTank(float angle, float _hp, float turret_angle, float cooldown, const glm::vec3& position, const glm::vec3& forward_tank,
         const glm::vec3& forward_turret, std::string _movementState, std::string _turretState, float _targetSecondsTank, float _targetSecondsTurret,
         bool _shoot = false, float _timerMove = 0, float _timerTurretMove = 0)
         : angle(angle),
-          hp(hp),
+          hp(_hp),
           turretAngle(turret_angle),
           cooldown(cooldown),
           position(position),
@@ -52,4 +53,5 @@ public:
     void updateTimerTurretMove(float deltaTime);
     void updateTankPosition(float deltaTime);
     void updateTurretPosition();
+    bool checkTankNearby(Tank playerTank, int tankRadius);
 };

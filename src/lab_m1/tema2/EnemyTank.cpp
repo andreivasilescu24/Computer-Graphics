@@ -53,4 +53,12 @@ void EnemyTank::updateTurretPosition()
     }
 }
 
-
+bool EnemyTank::checkTankNearby(Tank playerTank, int tankRadius)
+{
+    float distance = glm::distance(this->position, playerTank.position);
+    if(distance < tankRadius)
+    {
+        return true;
+    }
+    return false;
+}
