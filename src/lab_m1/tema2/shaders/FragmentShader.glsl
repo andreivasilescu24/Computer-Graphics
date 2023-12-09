@@ -17,6 +17,7 @@ void main()
     if(frag_hp == 3.f) {
         out_color = vec4(frag_color, 1);
     } else {
-        out_color = vec4(frag_color * (0.5f - frag_hp / 3.f), 1);    
+        float darkenFactor = 1.f - frag_hp / 3.f;
+        out_color = vec4(mix(frag_color, frag_color * 0.5f, darkenFactor), 1);
     }
 }

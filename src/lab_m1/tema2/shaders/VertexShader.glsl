@@ -32,11 +32,7 @@ void main()
 	frag_hp = hp;
 	
     // TODO(student): Compute gl_Position
-    
-    if(frag_hp == 3.f) {
-        gl_Position = Projection * View * Model * vec4(v_position, 1.0);
-    } else {
-        gl_Position = Projection * View * Model * vec4(v_position * sin(frag_hp), 1.0);
-    }
+ 
+    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 
 }

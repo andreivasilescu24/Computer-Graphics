@@ -204,20 +204,36 @@ bool Tema2::checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_
 bool Tema2::checkCollisionPlayerEnemy(EnemyTank enemy_tank)
 {
     float distance = glm::distance(playerTank.position, enemy_tank.position);
-    if(distance < tankRadius + tankRadius)
+    if(distance < tankRadius * 2)
     {
-        std::cout << "COLLISION TANK TANK" << std::endl;
         return true;
     }
     return false;
 }
 
+bool Tema2::checkCollisionEnemyEnemy(EnemyTank enemy_tank)
+{
+    for(int i = 0; i < numEnemyTanks; i++)
+    {
+        if(&enemy_tank != &enemyTanks[i])
+        {
+            float distance = glm::distance(enemy_tank.position, enemyTanks[i].position);
+            if(distance < tankRadius * 2)
+            {
+                enemy_tank.collisionTank = &enemyTanks[i];
+                return true;
+            }
+        }
+    }
+    return false;
+    
+}
+
+
 void Tema2::RenderEnemies(float deltaTimeSeconds)
 {
     for(int i = 0; i < numEnemyTanks; i++)
     {
-        enemyTanks[i].updateTankPosition(deltaTimeSeconds);
-        enemyTanks[i].updateTurretPosition();
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix, enemyTanks[i].position);
@@ -233,11 +249,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.54f, 0, 0), enemyTanks[i].hp);
         }
-
-        if(enemyTanks[i].checkTankNearby(playerTank, tankRadius))
-        {
-            std::cout << "TANK NEARBY" << std::endl;
-        }
+        
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
@@ -256,33 +268,49 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp);
         }
 
-        enemyTanks[i].updateTimerMove(deltaTimeSeconds);
-        if(enemyTanks[i].timerMove > enemyTanks[i].targetSecondsTank)
-        {
-            std::string new_state = decodeMovementIndex(getRandIntNum(0, 3));
-            float new_target_seconds;
-            if(new_state == "FORWARD" || new_state == "BACKWARD")
-            {
-                new_target_seconds = getRandFloatNum(4.f, 6.f);
-            } else
-            {
-                new_target_seconds = getRandFloatNum(0.f, 1.f);
-            }
-            enemyTanks[i].updateMovementState(new_state, new_target_seconds);
-        }
 
-        enemyTanks[i].updateTimerTurretMove(deltaTimeSeconds);
-        if(enemyTanks[i].timerTurretMove > enemyTanks[i].targetSecondsTurret)
+        // if(checkCollisionEnemyEnemy(enemyTanks[i]))
+        // {
+        //     float P = (2 * tankRadius) - glm::distance(enemyTanks[i].position, enemyTanks[i].collisionTank->position);
+        //     // glm::vec3 direction = glm::normalize(enemyTanks[i].position - enemyTanks[i].collisionTank->position);
+        //     // enemyTanks[i].position += direction * P * 0.5f;
+        //     // enemyTanks[i].collisionTank->position -= direction * P * 0.5f;
+        // } 
+        
+        
+        if(enemyTanks[i].hp)
         {
-            enemyTanks[i].turretState = decodeTurretMoveIndex(getRandIntNum(0, 2));
-            if(enemyTanks[i].turretState == "ROTATE_LEFT" || enemyTanks[i].turretState == "ROTATE_RIGHT")
+            enemyTanks[i].updateTankPosition(deltaTimeSeconds);
+            enemyTanks[i].updateTurretPosition();
+        
+            enemyTanks[i].updateTimerMove(deltaTimeSeconds);
+            if(enemyTanks[i].timerMove > enemyTanks[i].targetSecondsTank)
             {
-                enemyTanks[i].targetSecondsTurret = getRandFloatNum(0.5f, 2.f);
-            } else
-            {
-                enemyTanks[i].targetSecondsTurret = getRandFloatNum(2.f, 4.f);
+                std::string new_state = decodeMovementIndex(getRandIntNum(0, 3));
+                float new_target_seconds;
+                if(new_state == "FORWARD" || new_state == "BACKWARD")
+                {
+                    new_target_seconds = getRandFloatNum(4.f, 6.f);
+                } else
+                {
+                    new_target_seconds = getRandFloatNum(0.f, 1.f);
+                }
+                enemyTanks[i].updateMovementState(new_state, new_target_seconds);
             }
-            enemyTanks[i].timerTurretMove = 0;
+
+            enemyTanks[i].updateTimerTurretMove(deltaTimeSeconds);
+            if(enemyTanks[i].timerTurretMove > enemyTanks[i].targetSecondsTurret)
+            {
+                enemyTanks[i].turretState = decodeTurretMoveIndex(getRandIntNum(0, 2));
+                if(enemyTanks[i].turretState == "ROTATE_LEFT" || enemyTanks[i].turretState == "ROTATE_RIGHT")
+                {
+                    enemyTanks[i].targetSecondsTurret = getRandFloatNum(0.5f, 2.f);
+                } else
+                {
+                    enemyTanks[i].targetSecondsTurret = getRandFloatNum(2.f, 4.f);
+                }
+                enemyTanks[i].timerTurretMove = 0;
+            }
         }
     }
 }
@@ -311,14 +339,14 @@ void Tema2::RenderProjectiles(float deltaTimeSeconds)
             {
                 if(checkCollisionProjectileTank(playerProjectiles[i], enemyTanks[j]))
                 {
-                    enemyTanks[j].hp -= damagePerHit;
+                    if(enemyTanks[j].hp)
+                    {
+                        enemyTanks[j].hp -= damagePerHit;
+                    }
+
                     playerProjectiles[i].hit = true;
-                    // if(enemyTanks[j].hp == 0)
-                    // {
-                    //     enemyTanks.erase(enemyTanks.begin() + j);
-                    //     numEnemyTanks--;
-                    // }
                     break;
+                    
                 }
             }
         }
