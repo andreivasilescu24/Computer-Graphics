@@ -37,14 +37,16 @@ namespace m1
         void generateEnemyTank();
         void RenderEnemies(float deltaTimeSeconds);
         void RenderProjectiles(float deltaTimeSeconds);
+        void RenderEnemyProjectiles(EnemyTank enemy_tank, float deltaTimeSeconds);
         float getRandIntNum(int min, int max);
         std::string decodeMovementIndex(int index);
         std::string decodeTurretMoveIndex(int index);
-        bool checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_tank);
+        bool checkCollisionProjectileTank(Projectile projectile, glm::vec3 tankPosition);
         bool checkCollisionPlayerEnemy(EnemyTank enemy_tank);
         void checkCollisionEnemyEnemy(EnemyTank enemy_tank);
         bool checkCollisionTankBuilding(const glm::vec3& tank_position);
         bool checkTankNearby(EnemyTank enemy_tank);
+        
         
             
      protected:
