@@ -42,7 +42,10 @@ namespace m1
         std::string decodeTurretMoveIndex(int index);
         bool checkCollisionProjectileTank(Projectile projectile, EnemyTank enemy_tank);
         bool checkCollisionPlayerEnemy(EnemyTank enemy_tank);
-        bool checkCollisionEnemyEnemy(EnemyTank enemy_tank);
+        void checkCollisionEnemyEnemy(EnemyTank enemy_tank);
+        bool checkCollisionTankBuilding(const glm::vec3& tank_position);
+        bool checkTankNearby(EnemyTank enemy_tank);
+        
             
      protected:
         implemented::Camera_t2 *camera;

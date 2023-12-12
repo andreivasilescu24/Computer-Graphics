@@ -30,11 +30,13 @@ void EnemyTank::updateTankPosition(float deltaTime)
     } else if(movementState == "LEFT")
     {
         angle += deltaTime * 100;
+        // turretAngle += deltaTime * 100;
         forwardTank = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTank, 1)));
         forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
     } else if(movementState == "RIGHT")
     {
         angle -= deltaTime * 100;
+        // turretAngle -= deltaTime * 100;
         forwardTank = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTank, 1)));
         forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
     }

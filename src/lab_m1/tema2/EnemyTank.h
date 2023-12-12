@@ -27,12 +27,10 @@ public:
     float timerTurretMove;
     float targetSecondsTank;
     float targetSecondsTurret;
-
-    EnemyTank* collisionTank = NULL;
     
     EnemyTank(float angle, float _hp, float turret_angle, float cooldown, const glm::vec3& position, const glm::vec3& forward_tank,
         const glm::vec3& forward_turret, std::string _movementState, std::string _turretState, float _targetSecondsTank, float _targetSecondsTurret,
-        bool _shoot = false, float _timerMove = 0, float _timerTurretMove = 0)
+        bool _shoot = false, float _timerMove = 0, float _timerTurretMove = 0, bool _tankNearby = false)
         : angle(angle),
           hp(_hp),
           turretAngle(turret_angle),
