@@ -13,6 +13,7 @@ uniform mat4 View;
 uniform mat4 Projection;
 uniform vec3 Color;
 uniform float hp;
+uniform bool displace;
 
 // Output
 // TODO(student): Output values to fragment shader
@@ -32,7 +33,10 @@ void main()
 	frag_hp = hp;
 	
     // TODO(student): Compute gl_Position
- 
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    
+    if(displace == true && hp < 3)
+        gl_Position = Projection * View * Model * vec4(v_position + (1.5f / (4 - hp)), 1.0);
+    else
+        gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 
 }

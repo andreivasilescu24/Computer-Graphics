@@ -58,5 +58,5 @@ void main()
     // TODO(student): Send color light output to fragment shader
     color = object_color;
 
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    gl_Position = Projection * View * Model * vec4(v_position + , 1.0);
 }

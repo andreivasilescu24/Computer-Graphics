@@ -84,8 +84,16 @@ void Tema2::generateBuildings()
         float scaleY = getRandFloatNum(5, 20);
         float scaleZ = getRandFloatNum(5, 15);
         
-        float x = getRandFloatNum(-70, 70);
-        float z = getRandFloatNum(-70, 70);
+        float x = getRandFloatNum(-70,70);
+        if(x < 0)
+            x -= 20;
+        else
+            x += 20;
+        float z = getRandFloatNum(-70,70);
+        if(z < 0)
+            z -= 20;
+        else
+            z += 20;
         float y = 0.5f * scaleY;
         
         buildings.push_back(Building(x, y, z, scaleX, scaleY, scaleZ));
@@ -216,7 +224,6 @@ bool Tema2::checkTankNearby(EnemyTank enemy_tank)
     float distance = glm::distance(playerTank.position, enemy_tank.position);
     if(distance < tankRadius * 2 + 10)
     {
-        // std::cout << "TANK NEARBY" << std::endl;
         return true;
     }
     return false;
@@ -252,10 +259,7 @@ void Tema2::RenderEnemyProjectiles(float deltaTimeSeconds)
                 enemyTanks[enemy_index].projectiles.erase(enemyTanks[enemy_index].projectiles.begin() + i);
 
             } else if(enemyTanks[enemy_index].projectiles[i].hit == false) {
-                std::cout << "INDEX " << i << std::endl;
-                std::cout << "FORWARD " << enemyTanks[enemy_index].projectiles[i].forward << std::endl;
-                std::cout << "POSITION " << enemyTanks[enemy_index].projectiles[i].position << std::endl << std::endl;
-                enemyTanks[enemy_index].projectiles[i].position -= deltaTimeSeconds * 2 * enemyTanks[enemy_index].projectiles[i].forward;
+                enemyTanks[enemy_index].projectiles[i].position -= deltaTimeSeconds * enemyTanks[enemy_index].projectiles[i].forward;
                 enemyTanks[enemy_index].projectiles[i].time += deltaTimeSeconds;
                 glm::mat4 modelMatrix = glm::mat4(1);
                 modelMatrix = glm::translate(modelMatrix, enemyTanks[enemy_index].projectiles[i].position);
@@ -294,7 +298,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.54f, 0, 0), enemyTanks[i].hp);
+            RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0.54f, 0, 0), enemyTanks[i].hp, true);
         }
         
         {
@@ -303,7 +307,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             // modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f), enemyTanks[i].hp);
+            RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f), enemyTanks[i].hp, true);
         }
 
         {
@@ -312,7 +316,7 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             // modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp);
+            RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp, true);
         }
 
         if(enemyTanks[i].hp)
@@ -408,8 +412,17 @@ void Tema2::RenderProjectiles(float deltaTimeSeconds)
 void Tema2::Update(float deltaTimeSeconds)
 {
     timer += deltaTimeSeconds;
-    if(timer > 120.f || playerTank.hp == 0)
+    if(timer > 120.f)
     {
+        for(int i = 0; i < numEnemyTanks; i++)
+            if(enemyTanks[i].hp == 0)
+                score++;
+        
+        std::cout << "GAME OVER (TIME IS UP)\n" << "SCORE: " << score << std::endl;
+        exit(0);
+    } else if(playerTank.hp == 0)
+    {
+        std::cout << "GAME OVER (PLAYER TANK WAS DESTROYED)\n" ;
         exit(0);
     }
     
@@ -434,7 +447,7 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, playerTank.position);
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0.39f, 0), playerTank.hp);
+        RenderMesh(meshes["corp"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0.39f, 0), playerTank.hp, true);
     }
 
     {
@@ -443,7 +456,7 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.13f, 0.54f, 0.13f), playerTank.hp);
+        RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.13f, 0.54f, 0.13f), playerTank.hp, true);
     }
 
     {
@@ -452,7 +465,7 @@ void Tema2::Update(float deltaTimeSeconds)
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.angle), glm::vec3(0, 1, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(playerTank.turretAngle), glm::vec3(0, 1, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), playerTank.hp);
+        RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), playerTank.hp, true);
     }
 
     
@@ -490,7 +503,7 @@ void Tema2::FrameEnd()
 }
 
 
-void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color, int hp)
+void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix, glm::vec3 color, int hp, bool displace)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -517,6 +530,9 @@ void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatr
 
     int hp_location = glGetUniformLocation(shader->program, "hp");
     glUniform1f(hp_location, hp);
+
+    int displace_location = glGetUniformLocation(shader->program, "displace");
+    glUniform1i(displace_location, displace);
     
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
