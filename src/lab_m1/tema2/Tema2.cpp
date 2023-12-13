@@ -105,7 +105,7 @@ void Tema2::generateEnemyTank()
     float targetSecondsTurret = getRandFloatNum(1, 4);
     
     enemyTanks.push_back(EnemyTank(tankAngle, 3.f, turretAngle, 0, glm::vec3(x, y, z),
-        glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), movementState, turretState, targetSeconds, targetSecondsTurret));
+        glm::vec3(0, 0, -1), glm::vec3(0, 0, -1), movementState, turretState, targetSeconds, targetSecondsTurret));
 }
 
 void Tema2::Init()
@@ -241,33 +241,36 @@ bool Tema2::checkTankNearby(EnemyTank enemy_tank)
 //     }
 // }
 
-void Tema2::RenderEnemyProjectiles(EnemyTank enemy_tank, float deltaTimeSeconds)
+void Tema2::RenderEnemyProjectiles(float deltaTimeSeconds)
 {
-    for(int i = 0; i < enemy_tank.projectiles.size(); i++)
+    for(int enemy_index = 0; enemy_index < numEnemyTanks; enemy_index++)
     {
-        std::cout << enemy_tank.projectiles.size() << std::endl;
-        if(enemy_tank.projectiles[i].time >= 5.f || enemy_tank.projectiles[i].hit == true)
+        for(int i = 0; i < enemyTanks[enemy_index].projectiles.size(); i++)
         {
-            enemy_tank.projectiles.erase(enemy_tank.projectiles.begin() + i);
-
-        } else if(enemy_tank.projectiles[i].hit == false) {
-            glm::vec3 direction = glm::normalize(glm::vec3(enemy_tank.projectiles[i].forward.x, 0, enemy_tank.projectiles[i].forward.z));
-            enemy_tank.projectiles[i].position += deltaTimeSeconds * 20 * direction;
-            enemy_tank.projectiles[i].time += deltaTimeSeconds;
-            glm::mat4 modelMatrix = glm::mat4(1);
-            modelMatrix = glm::translate(modelMatrix, enemy_tank.projectiles[i].position);
-            modelMatrix = glm::rotate(modelMatrix, RADIANS(enemy_tank.projectiles[i].angle), glm::vec3(0, 1, 0));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            RenderMesh(meshes["proiectil"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0, 0));
-            
-            if(checkCollisionProjectileTank(enemy_tank.projectiles[i], playerTank.position))
+            if(enemyTanks[enemy_index].projectiles[i].time >= 5.f || enemyTanks[enemy_index].projectiles[i].hit == true)
             {
-                std::cout << "HIT" << std::endl;
-                // if(playerTank.hp)
-                // {
-                //     playerTank.hp -= damagePerHit;
-                // }
-                enemy_tank.projectiles[i].hit = true;
+                enemyTanks[enemy_index].projectiles.erase(enemyTanks[enemy_index].projectiles.begin() + i);
+
+            } else if(enemyTanks[enemy_index].projectiles[i].hit == false) {
+                std::cout << "INDEX " << i << std::endl;
+                std::cout << "FORWARD " << enemyTanks[enemy_index].projectiles[i].forward << std::endl;
+                std::cout << "POSITION " << enemyTanks[enemy_index].projectiles[i].position << std::endl << std::endl;
+                enemyTanks[enemy_index].projectiles[i].position -= deltaTimeSeconds * 2 * enemyTanks[enemy_index].projectiles[i].forward;
+                enemyTanks[enemy_index].projectiles[i].time += deltaTimeSeconds;
+                glm::mat4 modelMatrix = glm::mat4(1);
+                modelMatrix = glm::translate(modelMatrix, enemyTanks[enemy_index].projectiles[i].position);
+                modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[enemy_index].projectiles[i].angle), glm::vec3(0, 1, 0));
+                modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+                RenderMesh(meshes["proiectil"], shaders["MyShader"], modelMatrix, glm::vec3(0, 0, 0));
+            
+                if(checkCollisionProjectileTank(enemyTanks[enemy_index].projectiles[i], playerTank.position))
+                {
+                    if(playerTank.hp)
+                    {
+                        playerTank.hp -= damagePerHit;
+                    }
+                    enemyTanks[enemy_index].projectiles[i].hit = true;
+                }
             }
         }
     }
@@ -299,7 +302,6 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
             // modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
-            // std::cout << "TURRET ANGLE " << enemyTanks[i].turretAngle << std::endl; 
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f), enemyTanks[i].hp);
         }
@@ -312,22 +314,20 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp);
         }
-        
-        RenderEnemyProjectiles(enemyTanks[i], deltaTimeSeconds);
 
         if(enemyTanks[i].hp)
         {
             if(checkTankNearby(enemyTanks[i]))
             {
                 enemyTanks[i].cooldown += deltaTimeSeconds;
-                glm::vec3 dir = glm::normalize(enemyTanks[i].position - playerTank.position);
+                glm::vec3 dir = (enemyTanks[i].position - playerTank.position);
                 float rotationAngle = atan2(dir.x, dir.z);
             
                 enemyTanks[i].turretAngle = DEGREES(rotationAngle);
-                // enemyTanks[i].forwardTurret = dir;
+                enemyTanks[i].forwardTurret = dir;
                 if(enemyTanks[i].cooldown >= 3.f)
                 {
-                    enemyTanks[i].projectiles.push_back(Projectile(false, enemyTanks[i].position, enemyTanks[i].forwardTurret, enemyTanks[i].turretAngle + enemyTanks[i].angle));
+                    enemyTanks[i].projectiles.push_back(Projectile(false, enemyTanks[i].position, enemyTanks[i].forwardTurret, enemyTanks[i].turretAngle));
                     enemyTanks[i].cooldown = 0;
                 }
             }
@@ -467,6 +467,7 @@ void Tema2::Update(float deltaTimeSeconds)
     
     RenderProjectiles(deltaTimeSeconds);
     RenderEnemies(deltaTimeSeconds);
+    RenderEnemyProjectiles(deltaTimeSeconds);
     
 
     for(int i = 0; i < enemyTanks.size(); i++)
@@ -530,81 +531,20 @@ void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatr
 
 void Tema2::OnInputUpdate(float deltaTime, int mods)
 {
-    // move the camera only if MOUSE_RIGHT button is pressed
-    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-        float cameraSpeed = 2.0f;
-
-        if (window->KeyHold(GLFW_KEY_W)) {
-            // TODO(student): Translate the camera forward
-            camera->TranslateForward(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_A)) {
-            // TODO(student): Translate the camera to the left
-            camera->TranslateRight(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_S)) {
-            // TODO(student): Translate the camera backward
-            camera->TranslateForward(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_D)) {
-            // TODO(student): Translate the camera to the right
-            camera->TranslateRight(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_Q)) {
-            // TODO(student): Translate the camera downward
-            camera->TranslateUpward(-deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_E)) {
-            // TODO(student): Translate the camera upward
-            camera->TranslateUpward(deltaTime * cameraSpeed);
-        }
-
-        if (window->KeyHold(GLFW_KEY_O)) {
-            projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 200.0f);
-        }
-
-        if(window->KeyHold(GLFW_KEY_P)) {
-            projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
-        }
-
-        if(window->KeyHold(GLFW_KEY_N))
-        {
-            fov -= deltaTime * 0.5;
-            projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);
-        }
-
-        if(window->KeyHold(GLFW_KEY_M))
-        {
-            fov += deltaTime * 0.5;
-            projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);
-        }
-
-        if(window->KeyHold(GLFW_KEY_J))
-        {
-            
-        }
-
-        if(window->KeyHold(GLFW_KEY_K))
-        {
-            
-        }
-    } else
-    {
         if(window->KeyHold(GLFW_KEY_W))
         {
             playerTank.position += 4 * deltaTime * playerTank.forwardTank;
+            camera->RotateFirstPerson_OY(-camera->angle);
             camera->MoveForward(deltaTime * 4);
+            camera->RotateFirstPerson_OY(camera->angle);
+
         }
         if(window->KeyHold(GLFW_KEY_S))
         {
             playerTank.position -= 4 * deltaTime * playerTank.forwardTank;
+            camera->RotateFirstPerson_OY(-camera->angle);
             camera->MoveForward(-deltaTime * 4);
+            camera->RotateFirstPerson_OY(camera->angle);
         }
         if(window->KeyHold(GLFW_KEY_A))
         {
@@ -619,8 +559,8 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
             camera->RotateThirdPerson_OY(RADIANS(-deltaTime * 100));
             playerTank.forwardTank = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(playerTank.forwardTank, 1)));
             playerTank.forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(playerTank.forwardTurret, 1)));
+        
         }
-    }
 
     // TODO(student): Change projection parameters. Declare any extra
     // variables you might need in the class header. Inspect this file
@@ -657,23 +597,27 @@ void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
         float sensivityOX = 0.001f;
         float sensivityOY = 0.001f;
 
-        if (window->GetSpecialKeyState() == 0) {
-            renderCameraTarget = false;
-            // TODO(student): Rotate the camera in first-person mode around
-            // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
-            // variables for setting up the rotation speed.
-            camera->RotateFirstPerson_OX(-2 * sensivityOX * deltaY);
-            camera->RotateFirstPerson_OY(-2 * sensivityOY * deltaX);
-        }
+        // if (window->GetSpecialKeyState() == 0) {
+        //     renderCameraTarget = false;
+        //     // TODO(student): Rotate the camera in first-person mode around
+        //     // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
+        //     // variables for setting up the rotation speed.
+        //     camera->RotateFirstPerson_OX(-2 * sensivityOX * deltaY);
+        //     camera->RotateFirstPerson_OY(-2 * sensivityOY * deltaX);
+        // }
+        //
+        // if (window->GetSpecialKeyState() & GLFW_MOD_CONTROL) {
+        //     renderCameraTarget = true;
+        //     // TODO(student): Rotate the camera in third-person mode around
+        //     // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
+        //     // variables for setting up the rotation speed.
+        //     camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
+        //     camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
+        // }
 
-        if (window->GetSpecialKeyState() & GLFW_MOD_CONTROL) {
-            renderCameraTarget = true;
-            // TODO(student): Rotate the camera in third-person mode around
-            // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
-            // variables for setting up the rotation speed.
-            camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
-            camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
-        }
+        camera->angle += deltaX * 0.01f;
+        camera->RotateThirdPerson_OY(deltaX * 0.01f);
+ 
     } else
     {
         if(deltaX > 0)

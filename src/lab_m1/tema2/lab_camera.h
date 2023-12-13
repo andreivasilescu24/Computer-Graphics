@@ -33,6 +33,7 @@ namespace implemented
             forward     = glm::normalize(center - position);
             right       = glm::cross(forward, up);
             this->up    = glm::cross(right, forward);
+            this->angle = 0.f;
         }
 
         void MoveForward(float distance)
@@ -149,5 +150,6 @@ namespace implemented
         glm::vec3 forward;
         glm::vec3 right;
         glm::vec3 up;
+        float angle;
     };
 }   // namespace implemented

@@ -37,7 +37,7 @@ namespace m1
         void generateEnemyTank();
         void RenderEnemies(float deltaTimeSeconds);
         void RenderProjectiles(float deltaTimeSeconds);
-        void RenderEnemyProjectiles(EnemyTank enemy_tank, float deltaTimeSeconds);
+        void RenderEnemyProjectiles(float deltaTimeSeconds);
         float getRandIntNum(int min, int max);
         std::string decodeMovementIndex(int index);
         std::string decodeTurretMoveIndex(int index);
