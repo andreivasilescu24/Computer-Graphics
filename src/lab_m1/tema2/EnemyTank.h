@@ -50,8 +50,5 @@ public:
 
     void updateTimerMove(float deltaTime);
     void updateMovementState(std::string new_state, float new_target_seconds);
-    void updateTimerTurretMove(float deltaTime);
     void updateTankPosition(float deltaTime);
-    void updateTurretPosition();
-    bool checkTankNearby(Tank playerTank, int tankRadius);
 };

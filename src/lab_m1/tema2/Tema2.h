@@ -43,33 +43,31 @@ namespace m1
         std::string decodeTurretMoveIndex(int index);
         bool checkCollisionProjectileTank(Projectile projectile, glm::vec3 tankPosition);
         bool checkCollisionPlayerEnemy(EnemyTank enemy_tank);
-        void checkCollisionEnemyEnemy(EnemyTank enemy_tank);
-        bool checkCollisionTankBuilding(const glm::vec3& tank_position);
+        void checkCollisionEnemyEnemy(EnemyTank& enemy_tank);
+        glm::vec3 checkCollisionTankBuilding(glm::vec3& tank_position, bool isPlayer = false);
         bool checkTankNearby(EnemyTank enemy_tank);
-        
-        
+        bool checkCollisionProjectileBuilding(const Projectile& projectile);
+        bool checkCollisionProjectileEnemy(Projectile projectile, EnemyTank enemy_tank);
             
      protected:
         implemented::Camera_t2 *camera;
         glm::mat4 projectionMatrix;
         bool renderCameraTarget;
-
-        // TODO(student): If you need any other class variables, define them here.
+        
         float fov = RADIANS(60);
         Tank playerTank;
         std::vector<Projectile> playerProjectiles;
         std::vector<Building> buildings;
         std:: vector<EnemyTank> enemyTanks;
-        int numBuildings = 30;
-        int numEnemyTanks = 20;
+        int numBuildings = 12;
+        int numEnemyTanks = 7;
         float timer = 0;
 
         float damagePerHit = 1.f;
         int hitCounter = 0;
 
         float projectileRadius = 0.03f;
-        float tankRadius = 1.5f;
+        float tankRadius = 1.3f;
         int score = 0;
-        
     };
 }   // namespace m1

@@ -14,11 +14,6 @@ void EnemyTank::updateMovementState(std::string new_state, float new_target_seco
     timerMove = 0;
 }
 
-void EnemyTank::updateTimerTurretMove(float deltaTime)
-{
-    timerTurretMove += deltaTime;
-}
-
 void EnemyTank::updateTankPosition(float deltaTime)
 {
     if(movementState == "FORWARD")
@@ -30,37 +25,10 @@ void EnemyTank::updateTankPosition(float deltaTime)
     } else if(movementState == "LEFT")
     {
         angle += deltaTime * 100;
-        // turretAngle += deltaTime * 100;
         forwardTank = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTank, 1)));
-        // forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
     } else if(movementState == "RIGHT")
     {
         angle -= deltaTime * 100;
-        // turretAngle -= deltaTime * 100;
         forwardTank = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTank, 1)));
-        // forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
     }
-}
-
-void EnemyTank::updateTurretPosition()
-{
-    if(turretState == "ROTATE_LEFT")
-    {
-        turretAngle += 2.0f;
-        forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(2.f), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
-    } else if(turretState == "ROTATE_RIGHT")
-    {
-        turretAngle -= 2.0f;
-        forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-2.f), glm::vec3(0, 1, 0)) * glm::vec4(forwardTurret, 1)));
-    }
-}
-
-bool EnemyTank::checkTankNearby(Tank playerTank, int tankRadius)
-{
-    float distance = glm::distance(this->position, playerTank.position);
-    if(distance < tankRadius)
-    {
-        return true;
-    }
-    return false;
 }

@@ -11,12 +11,6 @@ using namespace std;
 using namespace m1;
 
 
-/*
- *  To find out more about `FrameStart`, `Update`, `FrameEnd`
- *  and the order in which they are called, see `world.cpp`.
- */
-
-
 Tema2::Tema2() : playerTank(glm::vec3(0, 0, 0), 0, 0, 0, 0, 0, 0, 3.f, 0, glm::vec3(0, 0, -1), glm::vec3(0, 0, -1))
 {
 }
@@ -72,9 +66,6 @@ float Tema2::getRandFloatNum(float min, float max)
     return dist(gen);
 }
 
-// x 5 15
-// y 10 25
-// z 5 15
 
 void Tema2::generateBuildings()
 {
@@ -86,17 +77,22 @@ void Tema2::generateBuildings()
         
         float x = getRandFloatNum(-70,70);
         if(x < 0)
-            x -= 20;
+            x -= 10;
         else
-            x += 20;
+            x += 10;
         float z = getRandFloatNum(-70,70);
         if(z < 0)
-            z -= 20;
+            z -= 10;
         else
-            z += 20;
+            z += 10;
         float y = 0.5f * scaleY;
         
-        buildings.push_back(Building(x, y, z, scaleX, scaleY, scaleZ));
+        glm::vec3 position;
+        position.x = x;
+        position.y = y;
+        position.z = z;
+        
+        buildings.push_back(Building(position, scaleX, scaleY, scaleZ));
     }
 }
 
@@ -165,9 +161,6 @@ void Tema2::Init()
         meshes[mesh->GetMeshID()] = mesh;
     }
 
-    // TODO(student): After you implement the changing of the projection
-    // parameters, remove hardcodings of these parameters
-
     {
         Shader *shader = new Shader("MyShader");
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "tema2", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
@@ -219,6 +212,59 @@ bool Tema2::checkCollisionPlayerEnemy(EnemyTank enemy_tank)
     return false;
 }
 
+glm::vec3 Tema2::checkCollisionTankBuilding(glm::vec3& tank_position, bool isPlayer)
+{
+    for(const auto& building : buildings)
+    {
+        float minX = building.position.x - building.scaleX / 2;
+        float maxX = building.position.x + building.scaleX / 2;
+        float minZ = building.position.z - building.scaleZ / 2;
+        float maxZ = building.position.z + building.scaleZ / 2;
+        float minY = building.position.y - building.scaleY / 2;
+        float maxY = building.position.y + building.scaleY / 2;
+
+        float x = std::max(minX, std::min(tank_position.x, maxX));
+        float y = std::max(minY, std::min(tank_position.y, maxY));
+        float z = std::max(minZ, std::min(tank_position.z, maxZ));
+
+        if(glm::distance(glm::vec3(x, y, z), tank_position) < tankRadius)
+        {
+            float P = tankRadius - glm::distance(tank_position, glm::vec3(x, y, z));
+            glm::vec3 direction = glm::normalize(tank_position - glm::vec3(x, y, z));
+            tank_position += direction * P * 0.5f;
+            if(isPlayer)
+                camera->position += direction * P * 0.5f;
+            break;
+        }
+    }
+
+    return tank_position;
+}
+
+bool Tema2::checkCollisionProjectileBuilding(const Projectile& projectile)
+{
+    for(const auto& building : buildings)
+    {
+        float minX = building.position.x - building.scaleX / 2;
+        float maxX = building.position.x + building.scaleX / 2;
+        float minZ = building.position.z - building.scaleZ / 2;
+        float maxZ = building.position.z + building.scaleZ / 2;
+        float minY = building.position.y - building.scaleY / 2;
+        float maxY = building.position.y + building.scaleY / 2;
+
+        float x = std::max(minX, std::min(projectile.position.x, maxX));
+        float y = std::max(minY, std::min(projectile.position.y, maxY));
+        float z = std::max(minZ, std::min(projectile.position.z, maxZ));
+
+        if(glm::distance(glm::vec3(x, y, z), projectile.position) < projectileRadius)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool Tema2::checkTankNearby(EnemyTank enemy_tank)
 {
     float distance = glm::distance(playerTank.position, enemy_tank.position);
@@ -229,24 +275,24 @@ bool Tema2::checkTankNearby(EnemyTank enemy_tank)
     return false;
 }
 
-// void Tema2::checkCollisionEnemyEnemy(EnemyTank enemy_tank)
-// {
-//     for(int i = 0; i < numEnemyTanks; i++)
-//     {
-//
-//         float distance = glm::distance(enemy_tank.position, enemyTanks[i].position);
-//         if(distance)
-//         {
-//             if(distance < tankRadius * 2)
-//             {
-//                 float P = (2 * tankRadius) - distance;
-//                 glm::vec3 direction = glm::normalize(enemy_tank.position - enemyTanks[i].position);
-//                 enemy_tank.position += direction * P * 0.5f;
-//                 enemyTanks[i].position -= direction * P * 0.5f;
-//             }
-//         }
-//     }
-// }
+void Tema2::checkCollisionEnemyEnemy(EnemyTank& enemy_tank)
+{
+    for(int i = 0; i < numEnemyTanks; i++)
+    {
+
+        float distance = glm::distance(enemy_tank.position, enemyTanks[i].position);
+        if(distance)
+        {
+            if(distance < tankRadius * 2)
+            {
+                float P = (2 * tankRadius) - distance;
+                glm::vec3 direction = glm::normalize(enemy_tank.position - enemyTanks[i].position);
+                enemy_tank.position += direction * P * 0.5f;
+                enemyTanks[i].position -= direction * P * 0.5f;
+            }
+        }
+    }
+}
 
 void Tema2::RenderEnemyProjectiles(float deltaTimeSeconds)
 {
@@ -254,6 +300,11 @@ void Tema2::RenderEnemyProjectiles(float deltaTimeSeconds)
     {
         for(int i = 0; i < enemyTanks[enemy_index].projectiles.size(); i++)
         {
+            if(checkCollisionProjectileBuilding(enemyTanks[enemy_index].projectiles[i]))
+            {
+                enemyTanks[enemy_index].projectiles[i].hit = true;
+            }
+            
             if(enemyTanks[enemy_index].projectiles[i].time >= 5.f || enemyTanks[enemy_index].projectiles[i].hit == true)
             {
                 enemyTanks[enemy_index].projectiles.erase(enemyTanks[enemy_index].projectiles.begin() + i);
@@ -285,6 +336,8 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
 {
     for(int i = 0; i < numEnemyTanks; i++)
     {
+        enemyTanks[i].position = checkCollisionTankBuilding(enemyTanks[i].position);
+        checkCollisionEnemyEnemy(enemyTanks[i]);
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix, enemyTanks[i].position);
@@ -304,7 +357,6 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
-            // modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             RenderMesh(meshes["turela"], shaders["MyShader"], modelMatrix, glm::vec3(0.69f, 0.13f, 0.13f), enemyTanks[i].hp, true);
@@ -313,7 +365,6 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
         {
             glm::mat4 modelMatrix = glm::mat4(1);
             modelMatrix = glm::translate(modelMatrix,  enemyTanks[i].position);
-            // modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].angle), glm::vec3(0, 1, 0));
             modelMatrix = glm::rotate(modelMatrix, RADIANS(enemyTanks[i].turretAngle), glm::vec3(0, 1, 0));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             RenderMesh(meshes["tun"], shaders["MyShader"], modelMatrix, glm::vec3(0.75f, 0.75f, 0.75f), enemyTanks[i].hp, true);
@@ -351,19 +402,6 @@ void Tema2::RenderEnemies(float deltaTimeSeconds)
                 }
                 enemyTanks[i].updateMovementState(new_state, new_target_seconds);
             }
-            // enemyTanks[i].updateTimerTurretMove(deltaTimeSeconds);
-            // if(enemyTanks[i].timerTurretMove > enemyTanks[i].targetSecondsTurret)
-            // {
-            //     enemyTanks[i].turretState = decodeTurretMoveIndex(getRandIntNum(0, 2));
-            //     if(enemyTanks[i].turretState == "ROTATE_LEFT" || enemyTanks[i].turretState == "ROTATE_RIGHT")
-            //     {
-            //         enemyTanks[i].targetSecondsTurret = getRandFloatNum(0.5f, 2.f);
-            //     } else
-            //     {
-            //         enemyTanks[i].targetSecondsTurret = getRandFloatNum(2.f, 4.f);
-            //     }
-            //     enemyTanks[i].timerTurretMove = 0;
-            // }
         }
     }
 }
@@ -372,6 +410,10 @@ void Tema2::RenderProjectiles(float deltaTimeSeconds)
 {
     for(int i = 0; i < playerProjectiles.size(); i++)
     {
+        if(checkCollisionProjectileBuilding(playerProjectiles[i]))
+        {
+            playerProjectiles[i].hit = true;
+        }
         if(playerProjectiles[i].time >= 5.f || playerProjectiles[i].hit == true)
         {
             playerProjectiles.erase(playerProjectiles.begin() + i);
@@ -420,17 +462,21 @@ void Tema2::Update(float deltaTimeSeconds)
         
         std::cout << "GAME OVER (TIME IS UP)\n" << "SCORE: " << score << std::endl;
         exit(0);
-    } else if(playerTank.hp == 0)
+    }
+
+    if(playerTank.hp == 0)
     {
         std::cout << "GAME OVER (PLAYER TANK WAS DESTROYED)\n" ;
         exit(0);
     }
+
+    playerTank.position = checkCollisionTankBuilding(playerTank.position, true);
     
     playerTank.cooldown += deltaTimeSeconds;
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(200, 0, 200));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(500, 0, 500));
         RenderMesh(meshes["ground"], shaders["MyShader"], modelMatrix, glm::vec3(0.46f, 0.53f, 0.6f));
     }
     
@@ -473,7 +519,7 @@ void Tema2::Update(float deltaTimeSeconds)
     for(int i = 0; i < numBuildings; i++)
     {
         glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(buildings[i].x, buildings[i].y, buildings[i].z));
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(buildings[i].position));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(buildings[i].scaleX, buildings[i].scaleY, buildings[i].scaleZ));
         RenderMesh(meshes["cladire"], shaders["MyShader"], modelMatrix, glm::vec3(0.09f, 0.09f, 0.49f));
     }
@@ -499,7 +545,7 @@ void Tema2::Update(float deltaTimeSeconds)
 
 void Tema2::FrameEnd()
 {
-    DrawCoordinateSystem(camera->GetViewMatrix(), projectionMatrix);
+    
 }
 
 
@@ -540,26 +586,21 @@ void Tema2::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatr
 }
 
 
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
-
 void Tema2::OnInputUpdate(float deltaTime, int mods)
 {
         if(window->KeyHold(GLFW_KEY_W))
         {
-            playerTank.position += 4 * deltaTime * playerTank.forwardTank;
+            playerTank.position += 6 * deltaTime * playerTank.forwardTank;
             camera->RotateFirstPerson_OY(-camera->angle);
-            camera->MoveForward(deltaTime * 4);
+            camera->MoveForward(deltaTime * 6);
             camera->RotateFirstPerson_OY(camera->angle);
 
         }
         if(window->KeyHold(GLFW_KEY_S))
         {
-            playerTank.position -= 4 * deltaTime * playerTank.forwardTank;
+            playerTank.position -= 6 * deltaTime * playerTank.forwardTank;
             camera->RotateFirstPerson_OY(-camera->angle);
-            camera->MoveForward(-deltaTime * 4);
+            camera->MoveForward(-deltaTime * 6);
             camera->RotateFirstPerson_OY(camera->angle);
         }
         if(window->KeyHold(GLFW_KEY_A))
@@ -577,31 +618,18 @@ void Tema2::OnInputUpdate(float deltaTime, int mods)
             playerTank.forwardTurret = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1), RADIANS(-deltaTime * 100), glm::vec3(0, 1, 0)) * glm::vec4(playerTank.forwardTurret, 1)));
         
         }
-
-    // TODO(student): Change projection parameters. Declare any extra
-    // variables you might need in the class header. Inspect this file
-    // for any hardcoded projection arguments (can you find any?) and
-    // replace them with those extra variables.
     
-
 }
 
 
 void Tema2::OnKeyPress(int key, int mods)
 {
-    // Add key press event
-    if (key == GLFW_KEY_T)
-    {
-        renderCameraTarget = !renderCameraTarget;
-    }
-    // TODO(student): Switch projections
 
 }
 
 
 void Tema2::OnKeyRelease(int key, int mods)
 {
-    // Add key release event
 }
 
 
@@ -610,27 +638,6 @@ void Tema2::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
     // Add mouse move event
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
-        float sensivityOX = 0.001f;
-        float sensivityOY = 0.001f;
-
-        // if (window->GetSpecialKeyState() == 0) {
-        //     renderCameraTarget = false;
-        //     // TODO(student): Rotate the camera in first-person mode around
-        //     // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
-        //     // variables for setting up the rotation speed.
-        //     camera->RotateFirstPerson_OX(-2 * sensivityOX * deltaY);
-        //     camera->RotateFirstPerson_OY(-2 * sensivityOY * deltaX);
-        // }
-        //
-        // if (window->GetSpecialKeyState() & GLFW_MOD_CONTROL) {
-        //     renderCameraTarget = true;
-        //     // TODO(student): Rotate the camera in third-person mode around
-        //     // OX and OY using `deltaX` and `deltaY`. Use the sensitivity
-        //     // variables for setting up the rotation speed.
-        //     camera->RotateThirdPerson_OX(-2 * sensivityOX * deltaY);
-        //     camera->RotateThirdPerson_OY(-2 * sensivityOY * deltaX);
-        // }
-
         camera->angle += deltaX * 0.01f;
         camera->RotateThirdPerson_OY(deltaX * 0.01f);
  

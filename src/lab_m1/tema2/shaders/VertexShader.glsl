@@ -34,9 +34,8 @@ void main()
 	
     // TODO(student): Compute gl_Position
     
-    if(displace == true && hp < 3)
-        gl_Position = Projection * View * Model * vec4(v_position + (1.5f / (4 - hp)), 1.0);
+    if(displace == true)
+        gl_Position = Projection * View * Model * vec4(v_position + (0.25f * (3.f - hp)), 1.0);
     else
         gl_Position = Projection * View * Model * vec4(v_position, 1.0);
-
 }
